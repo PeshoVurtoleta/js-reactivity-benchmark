@@ -1,0 +1,21 @@
+--- a/src/workloads.ts
++++ b/src/workloads.ts
+@@ -119,10 +119,14 @@
+     nSources: 4,
+     readFraction: 1,
+     iterations: 10000,
+-    expected: {
+-      sum: 5242355712,
+-      count: 224,
+-    },
++    // Build and observe the graph in setup: without a warm iteration the row
++    // times graph construction plus writes to never-read sources, and no
++    // computed is ever re-evaluated (measureBuild defaults to true).
++    warmupIterations: 1,
++    // Sum from the reference oracle (expectedGraphSum) in setup. The old count
++    // (224) assumed nothing propagates before the final read; on an observed
++    // graph eager engines legitimately recompute on each write.
++    expected: {},
+   },
+   {
+     name: "pure push",

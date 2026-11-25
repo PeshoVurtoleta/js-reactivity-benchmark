@@ -1,0 +1,64 @@
+--- a/src/cellxBench.ts
++++ b/src/cellxBench.ts
+@@ -10,6 +10,9 @@
+   start: Record<"prop1" | "prop2" | "prop3" | "prop4", Signal<number>>;
+   end: Record<"prop1" | "prop2" | "prop3" | "prop4", Computed<number>>;
+   before: Values;
++  /** Last value each effect observed, and the node it observes (validated untimed). */
++  seen: number[];
++  observed: Computed<number>[];
+   dispose: () => void;
+ }
+ 
+@@ -53,7 +56,12 @@
+         const after = readValues(end);
+         return [before, after];
+       },
+-      validate([before, after]) {
++      validate([before, after], fixture) {
++        // Effects are part of the workload: each must have delivered the
++        // committed value of the node it observes.
++        for (let i = 0; i < fixture.observed.length; i++)
++          if (fixture.seen[i] !== fixture.observed[i].read())
++            throw new Error(`cellx${layers}: effect ${i} is stale`);
+         if (!arraysEqual(before, expectedResult[0])) {
+           throw new Error(
+             `Expected first layer ${expectedResult[0]}, found ${before}`
+@@ -78,6 +86,14 @@
+ ): CellxFixture {
+   // Effects are owned by a fixture scope and disposed in teardown, so earlier
+   // fixtures never keep live subscriptions into later samples.
++  const seen: number[] = [];
++  const observed: Computed<number>[] = [];
++  const watch = (node: Computed<number>) => {
++    const index = observed.push(node) - 1;
++    framework.effect(() => {
++      seen[index] = node.read();
++    });
++  };
+   const scope = fixtureScope(framework, () => {
+     const start = {
+       prop1: framework.signal(1),
+@@ -101,17 +117,17 @@
+         prop4: framework.computed(() => previous.prop3.read()),
+       };
+ 
+-      framework.effect(() => next.prop1.read());
+-      framework.effect(() => next.prop2.read());
+-      framework.effect(() => next.prop3.read());
+-      framework.effect(() => next.prop4.read());
++      watch(next.prop1);
++      watch(next.prop2);
++      watch(next.prop3);
++      watch(next.prop4);
+       readValues(next);
+       layer = next;
+     }
+ 
+     return { start, end: layer, before: readValues(layer) };
+   });
+-  return { ...scope.value, dispose: scope.dispose };
++  return { ...scope.value, seen, observed, dispose: scope.dispose };
+ }
+ 
+ function readValues(values: CellxFixture["end"]): Values {

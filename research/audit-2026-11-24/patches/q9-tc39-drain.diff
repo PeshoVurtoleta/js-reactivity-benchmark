@@ -1,0 +1,32 @@
+--- a/src/frameworks/tc39-proposal-signals-stage-0.ts
++++ b/src/frameworks/tc39-proposal-signals-stage-0.ts
+@@ -4,8 +4,14 @@
+ let batchDepth = 0;
+ let flushing = false;
+ let scheduled = false;
++let renotified = false;
+ // The proposal deliberately leaves effects and scheduling to consumers.
+ const watcher = new Signal.subtle.Watcher(() => {
++  // A notification during a drain (an effect wrote a signal) means another pass.
++  if (flushing) {
++    renotified = true;
++    return;
++  }
+   if (!scheduled) {
+     scheduled = true;
+     queueMicrotask(() => {
+@@ -19,10 +25,12 @@
+   if (batchDepth || flushing) return;
+   flushing = true;
+   try {
+-    while (watcher.getPending().length) {
++    // One getPending() scan per pass, as in the polyfill README effect.
++    do {
++      renotified = false;
+       for (const signal of watcher.getPending()) signal.get();
+       watcher.watch();
+-    }
++    } while (renotified);
+   } finally {
+     watcher.watch();
+     flushing = false;

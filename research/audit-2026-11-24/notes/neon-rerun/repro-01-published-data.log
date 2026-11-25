@@ -1,0 +1,120 @@
+=== 1. PUBLISHED DATASET OVERVIEW ===
+{
+  sourceCommit: 'f0d456c45b12c7f4b9a42138337e867503a6581b',
+  node: 'v24.15.0',
+  v8: '13.6.233.17-node.48',
+  semantics: 'v4',
+  measurementVersion: 'v3',
+  totalRows: 1498,
+  totalTests: 51,
+  coreTests: 36,
+  commonCoreTests: 34,
+  excludedCoreTests: [ '32x8 - 4 sources - push (pure push)', 'manyEffectsFromOneSource' ],
+  stressTests: 13,
+  capabilityTests: 2,
+  frameworks: 30,
+  unranked: [ { name: 'dalien-signals', reason: '1 failed core scenarios' } ]
+}
+
+=== 2. NOV-10 FINDING #1 CHECK (SLOW/CAPPED LABEL MISMATCH) ===
+SLOW/CAPPED token count in latest.log: 0
+Partial rows in samples.json: 28 | Partial rows parsed from log: 28
+All-machine censored rows in samples.json: 32 | Parsed capped from log: 32
+
+=== 3. CORE GROUP WEIGHTING SKEW ===
+Common core groups: 6
+  group=pull         count= 1  groupWeight=16.67%  perTestWeight=16.67%  tests=[32x8 - 4 sources - pull (pure pull)]
+  group=push         count= 3  groupWeight=16.67%  perTestWeight=5.56%  tests=[manySourcesIntoOneComputedEffect, manySourcesIntoOneComputedEffectWithDirect, manySourcesIntoOneDirectEffect]
+  group=dynamic      count= 3  groupWeight=16.67%  perTestWeight=5.56%  tests=[mutable-object/immutable replacement, mutable-object/in-place versioned, molBench]
+  group=update       count= 7  groupWeight=16.67%  perTestWeight=2.38%  tests=[updateComputations1000to1, updateComputations1to2, updateComputations1to1000, updateComputations4to1, updateComputations2to1, updateComputations1to4, updateComputations1to1]
+  group=baseline     count=10  groupWeight=16.67%  perTestWeight=1.67%  tests=[deepPropagation, repeatedObservers, broadPropagation, avoidablePropagation, unstable, cellx2500, diamond, cellx1000, mux, triangle]
+  group=creation     count=10  groupWeight=16.67%  perTestWeight=1.67%  tests=[createDataSignals, createComputations1to4, createComputations1000to1, createComputations1to8, createComputations1to1, createComputations0to1, createComputations1to2, createComputations4to1, createComputations2to1, createComputations1to1000]
+
+=== 3b. IMPACT OF SINGLE TEST 'pure pull' (16.67% WEIGHT) ON LEADERBOARD ===
+  reflex                    base=# 3 (1.25x) -> noPurePull=# 2 (1.18x)  rankShift=+1  scoreChange=-5.3%
+  alien-signals             base=# 2 (1.20x) -> noPurePull=# 3 (1.23x)  rankShift=-1  scoreChange=2.7%
+  anod                      base=# 7 (1.83x) -> noPurePull=# 6 (1.74x)  rankShift=+1  scoreChange=-5.4%
+  @vue/reactivity 3.6 RC    base=# 6 (1.65x) -> noPurePull=# 7 (1.75x)  rankShift=-1  scoreChange=6.1%
+  s-js                      base=#22 (4.87x) -> noPurePull=# 9 (1.85x)  rankShift=+13  scoreChange=-62.0%
+  rescript-signals          base=# 9 (1.92x) -> noPurePull=#10 (1.99x)  rankShift=-1  scoreChange=3.8%
+  @maverick-js/signals      base=#10 (2.05x) -> noPurePull=#11 (2.17x)  rankShift=-1  scoreChange=5.7%
+  @vue/reactivity           base=#11 (2.28x) -> noPurePull=#12 (2.44x)  rankShift=-1  scoreChange=6.7%
+  reactive-engine           base=#15 (2.88x) -> noPurePull=#13 (2.55x)  rankShift=+2  scoreChange=-11.6%
+  @angular/signals          base=#12 (2.45x) -> noPurePull=#14 (2.62x)  rankShift=-2  scoreChange=7.1%
+  Oby                       base=#13 (2.60x) -> noPurePull=#15 (2.82x)  rankShift=-2  scoreChange=8.8%
+  uSignal                   base=#14 (2.88x) -> noPurePull=#17 (3.25x)  rankShift=-3  scoreChange=12.9%
+  Signia                    base=#19 (3.60x) -> noPurePull=#18 (3.30x)  rankShift=+1  scoreChange=-8.3%
+  @amadeus-it-group/tansu   base=#18 (3.49x) -> noPurePull=#19 (3.57x)  rankShift=-1  scoreChange=2.4%
+  $mol_wire                 base=#17 (3.26x) -> noPurePull=#20 (3.76x)  rankShift=-3  scoreChange=15.2%
+  SolidJS                   base=#23 (10.48x) -> noPurePull=#21 (4.05x)  rankShift=+2  scoreChange=-61.3%
+  TC39 Signals Polyfill     base=#20 (3.81x) -> noPurePull=#22 (4.07x)  rankShift=-2  scoreChange=6.8%
+  MobX                      base=#21 (3.97x) -> noPurePull=#23 (4.39x)  rankShift=-2  scoreChange=10.6%
+  SolidJS 2 RC              base=#26 (12.75x) -> noPurePull=#24 (5.15x)  rankShift=+2  scoreChange=-59.6%
+  @solidjs/signals 2 RC     base=#27 (12.81x) -> noPurePull=#25 (5.19x)  rankShift=+2  scoreChange=-59.5%
+  @solidjs/signals          base=#28 (13.49x) -> noPurePull=#26 (5.71x)  rankShift=+2  scoreChange=-57.6%
+  kairo 0.8 alpha           base=#25 (12.57x) -> noPurePull=#27 (6.30x)  rankShift=-2  scoreChange=-49.9%
+  Svelte v5                 base=#24 (12.53x) -> noPurePull=#28 (7.34x)  rankShift=-4  scoreChange=-41.4%
+  @reatom/core              base=#29 (36.05x) -> noPurePull=#29 (21.96x)  rankShift=+0  scoreChange=-39.1%
+
+=== 3c. IMPACT OF UNRANKED dalien-signals SETTING bestByRound ===
+Rounds where unranked dalien-signals set bestByRound in commonTests: [ { test: 'broadPropagation', round: 1, min: 0.249072 } ]
+  Preact Signals            base=#5 (1.6269x) -> exclUnranked=#4 (1.6259x)
+  @reactively               base=#4 (1.6268x) -> exclUnranked=#5 (1.6268x)
+  Oby                       base=#13 (2.5958x) -> exclUnranked=#13 (2.5943x)
+  SolidJS 2 RC              base=#26 (12.7493x) -> exclUnranked=#26 (12.7418x)
+  @solidjs/signals 2 RC     base=#27 (12.8071x) -> exclUnranked=#27 (12.7995x)
+
+=== 4. SHARD CPU HETEROGENEITY & BETWEEN-MACHINE NOISE ===
+  Shard 1: med sd_machine=14.7% (rows=204, partial=8) | CPUs: m1:AMD EPYC 9V74 80-Core Processor | m2:AMD EPYC 9V74 80-Core Processor | m3:AMD EPYC 9V74 80-Core Processor
+  Shard 2: med sd_machine=31.2% (rows=174, partial=7) | CPUs: m1:AMD EPYC 9V74 80-Core Processor | m2:AMD EPYC 7763 64-Core Processor | m3:AMD EPYC 9V45 96-Core Processor
+  Shard 3: med sd_machine=14.5% (rows=167, partial=4) | CPUs: m1:AMD EPYC 7763 64-Core Processor | m2:AMD EPYC 9V74 80-Core Processor | m3:AMD EPYC 7763 64-Core Processor
+  Shard 4: med sd_machine=2.0% (rows=169, partial=0) | CPUs: m1:AMD EPYC 7763 64-Core Processor | m2:AMD EPYC 7763 64-Core Processor | m3:AMD EPYC 7763 64-Core Processor
+  Shard 5: med sd_machine=33.1% (rows=166, partial=4) | CPUs: m1:Intel(R) Xeon(R) 6975P-C | m2:AMD EPYC 9V45 96-Core Processor | m3:AMD EPYC 7763 64-Core Processor
+  Shard 6: med sd_machine=25.0% (rows=167, partial=0) | CPUs: m1:Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz | m2:Intel(R) Xeon(R) 6975P-C | m3:Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+  Shard 7: med sd_machine=30.2% (rows=166, partial=5) | CPUs: m1:AMD EPYC 9V74 80-Core Processor | m2:AMD EPYC 7763 64-Core Processor | m3:AMD EPYC 9V45 96-Core Processor
+  Shard 8: med sd_machine=33.9% (rows=204, partial=0) | CPUs: m1:AMD EPYC 7763 64-Core Processor | m2:AMD EPYC 9V45 96-Core Processor | m3:AMD EPYC 9V45 96-Core Processor
+
+=== 5. CENSORING VS CPU MODEL CORRELATION (PARTIAL ROWS) ===
+  AMD EPYC 9V74 80-Core Processor              censored=15  measured=25  censorRate=37.5%
+  AMD EPYC 7763 64-Core Processor              censored=23  measured= 1  censorRate=95.8%
+  Intel(R) Xeon(R) 6975P-C                     censored= 4  measured= 0  censorRate=100.0%
+  AMD EPYC 9V45 96-Core Processor              censored= 0  measured=16  censorRate=0.0%
+
+=== 6. ORDER-DEPENDENT CEILING ANOMALY ON LAYERED BURST FLUSH WARM (MACHINE 2) ===
+  SolidJS                  capped=true ceiling=2557.85 est=undefined r1_pilot=undefined r1_censor=undefined val=not-completed
+  uSignal                  capped=true ceiling=2414.91 est=undefined r1_pilot=undefined r1_censor=undefined val=not-completed
+  dalien-signals           capped=false ceiling=undefined est=690.04 r1_pilot=871.11 r1_censor=773.34 val=passed
+  reflex-quant             capped=false ceiling=undefined est=796.23 r1_pilot=1076.95 r1_censor=852.62 val=passed
+  @solidjs/signals 2 RC    capped=true ceiling=2320.02 est=undefined r1_pilot=2080.56 r1_censor=2442.69 val=passed
+  Signia                   capped=false ceiling=undefined est=781.98 r1_pilot=1030.20 r1_censor=804.97 val=passed
+  SolidJS 2 RC             capped=false ceiling=undefined est=2412.45 r1_pilot=2489.99 r1_censor=2551.81 val=passed
+
+=== 7. LAYERED FULL-DRAIN COLD LAZY VS EAGER WORK ASYMMETRY ===
+  nodesRecomputed=233240 edgesTraversed=932960 (7 engines): SolidJS 2 RC(229.0ms), @solidjs/signals 2 RC(202.5ms), s-js(158.6ms), @solidjs/signals(190.3ms), rescript-signals(181.9ms), anod(101.8ms), SolidJS(254.9ms)
+  nodesRecomputed=249624 edgesTraversed=998496 (19 engines): reactive-engine(87.9ms), lite-signal(114.6ms), Preact Signals(192.3ms), alien-signals(88.4ms), dalien-signals(74.9ms), @reactively(98.4ms), reflex(70.1ms), reflex-quant(65.0ms), TC39 Signals Polyfill(577.2ms), @vue/reactivity 3.6 RC(84.0ms), Oby(154.4ms), @angular/signals(502.6ms), MobX(243.5ms), $mol_wire(118.6ms), @amadeus-it-group/tansu(179.0ms), uSignal(173.4ms), @vue/reactivity(251.1ms), Signia(251.9ms), @maverick-js/signals(135.4ms)
+  nodesRecomputed=1966080 edgesTraversed=7864320 (1 engines): cellx(528.1ms)
+
+=== 8. PAIRED STATS DROPPED ON PARTIAL ROWS ===
+Partial rows with paired stats: 0 / 28
+
+=== 9. ORDER-STATISTIC sd_within COVERAGE BIAS ===
+  n=  6 (freq=3734 rounds): order=[1, 6] exact_coverage=96.88% (vs nominal 95% Z=1.96)
+  n=100 (freq=3282 rounds): order=[40, 61] exact_coverage=96.48% (vs nominal 95% Z=1.96)
+  n= 10 (freq=1702 rounds): order=[2, 9] exact_coverage=97.85% (vs nominal 95% Z=1.96)
+  n= 11 (freq= 221 rounds): order=[2, 10] exact_coverage=98.83% (vs nominal 95% Z=1.96)
+  n= 16 (freq= 213 rounds): order=[4, 13] exact_coverage=97.87% (vs nominal 95% Z=1.96)
+  n= 13 (freq= 211 rounds): order=[3, 11] exact_coverage=97.75% (vs nominal 95% Z=1.96)
+  n= 14 (freq= 199 rounds): order=[3, 12] exact_coverage=98.71% (vs nominal 95% Z=1.96)
+  n= 12 (freq= 193 rounds): order=[3, 10] exact_coverage=96.14% (vs nominal 95% Z=1.96)
+
+=== 10. STALE SEMANTIC GAUNTLET VERSIONS ===
+semantic-gauntlet.json node: v25.2.0 (pinned .nvmrc: 24.15.0)
+semantic-gauntlet versions vs package.json: {
+  quant: '1.1.1 vs 1.2.0',
+  mobx: '7.1.5 vs 7.1.7',
+  solid: '1.9.18 vs 1.9.19'
+}
+
+--stderr--
+
+--exit 0 signal null

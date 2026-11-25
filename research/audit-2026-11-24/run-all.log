@@ -1,0 +1,83 @@
+# run-all.log -- verification of research/audit-2026-11-24, 2026-11-25 (untimed; the seconds column is wall time on a shared host)
+# checkout: `git archive 12f169b0f7d25de343433e3199c27d0472136185 | tar -x` into an empty directory, the audit host's node_modules
+#   copied in (versions differ from pnpm-lock.yaml for 9 packages: README "Installed packages"), `node scripts/build.mjs`
+#   (exit 0, "Built production runner and 30 isolated framework workers."), this folder copied to research/audit-2026-11-24/.
+# host: Apple M4 Pro, Darwin arm64, node v26.8.2; quiet-lock free, host busy (other node processes of other sessions).
+# 1) cd research/audit-2026-11-24 && node run-all.mjs   (no argument; uptime before / after on first / last line; stdout only)
+    3:46  up 7 days, 16:17, 8 users, load averages: 5.09 5.71 7.92
+   # checkout: ../.. (relative to this folder)
+   # dist/index.js sha256 47017675401befdc7c01e1d3e142be7c1170f20b4e5aca40d62f4610b93ea0ad; bench-results sourceCommit f0d456c45b12c7f4b9a42138337e867503a6581b
+   # node v26.8.2, V8 14.6.202.34-node.28, darwin/arm64; load average 5.09 5.71 7.92
+   # scratch (outside the repository): <os.tmpdir()>/jrb-audit-run-all-lrW100
+   # started 2026-11-25T01:46:07.524Z
+   d1-pull-group-no-dirty-reads 1   (2 s)
+   d2-dynamic-group-no-churn 1   (2 s)
+   d3-cellx-effects 1   (1 s)
+   d4-sync-loop-retains-fixtures 1   (7 s)
+   d5-angular-dev-mode 1   (0 s)
+   d6-setup-failure-kind 1   (1 s)
+   d7-adapter-docs 1   (0 s)
+   q1-molbench-cutoff 1   (1 s)
+   q10-layered-cold-setup-work 1   (12 s)
+   q2-dynamic-rows-final-state-only 1   (88 s)
+   q3-score-weights 1   (0 s)
+   q4-censor-exclusion 1   (0 s)
+   q5-censor-order-dependent 1   (0 s)
+   q6-warmup-drift 1   (0 s)
+   q7-rank-sensitivity 1   (0 s)
+   q8-stack-depth 1   (1 s)
+   q9-tc39-drain 1   (0 s)
+   x1-score-recompute 0   (0 s)
+   x2-capped-label 0   (1 s)
+   x3-gc-before-sample 0   (0 s)
+   # finished 2026-11-25T01:48:04.123Z; load average 4.99 5.50 7.56
+   # full output of each repro: <scratch>/outputs/<slug>.txt; run-all exit 0
+   run-all exit=0
+    3:48  up 7 days, 16:19, 8 users, load averages: 4.99 5.50 7.56
+# 2) verdict lines (full per-script output was in <scratch>/outputs/<slug>.txt)
+## d1-pull-group-no-dirty-reads
+   REPRODUCED: the only row of group 'pull' does 0 dirty re-evaluations on a lazy engine: 10000 batched writes, 32 sink reads, 224 first evaluations of 224 nodes built inside the timed region; it weighs 16.7% of the score and removing it changes 23 ranks
+## d2-dynamic-group-no-churn
+   REPRODUCED: 2 of the 3 rows in group 'dynamic' (mutable-object/immutable replacement, mutable-object/in-place versioned) perform 0 dependency-set changes; molBench: 2; the unscored 'dynamic/dynamic component' performs 107
+## d3-cellx-effects
+   REPRODUCED (a) skipEffects passes: stable diamond mesh warm, cellx1000, cellx2500; fails: diamond (control). Correct engine: 4/4 pass.
+## d4-sync-loop-retains-fixtures
+   REPRODUCED: in the shipped synchronous loop tansu retains 109 MB and Svelte v5 80 MB more live heap per invocation of createComputations1to1 (flat with a microtask checkpoint, flat for alien-signals and Preact Signals); their published creation rows slow down inside every process (8 and 8 of 10 rows)
+## d5-angular-dev-mode
+   REPRODUCED: the shipped Angular worker runs in development mode (70 live dev guards, global ngDevMode is a truthy object after a real row); in that mode every signal and computed gets an own toString closure (control with ngDevMode=false: none)
+## d6-setup-failure-kind
+   REPRODUCED: 3 rows report a wrong result as kind 'error' instead of 'incorrect' (diamond, manySourcesIntoOneDirectEffect, molBench)
+## d7-adapter-docs
+   REPRODUCED catalog=30, published engines=30, doc counts README.md=29, docs/adapter-audit.md=29, docs/production.md=29; missing from README adapter table: reflex-quant; reflex-quant in SEMANTICS matrix=false, in adapter-audit/recheck=false; published rank of reflex-quant=1.
+## q1-molbench-cutoff
+   REPRODUCED molBench: F evaluations per timed run = 0 for alien-signals, 0 for lite-signal, 2 for s-js, 2 for uSignal (control with fresh D: alien-signals F=2); a frozen F passes molBench validation (alien: passed, s-js: passed).
+## q10-layered-cold-setup-work
+   REPRODUCED: alien-signals, lite-signal, Preact Signals do 16384 first evaluations inside the timed call; s-js, SolidJS, anod do them in setup (timed evaluations 249624 vs 233240); the row is in the unscored stress suite
+## q2-dynamic-rows-final-state-only
+   REPRODUCED: a mock whose every in-loop sink read is stale passes 15/15 dependency-graph rows; sporadically wrong reads pass 13; double evaluation passes 8 even with pull counts asserted (rows with expected: {}) and all 15 without
+## q3-score-weights
+   REPRODUCED: one scenario weighs 1.67% to 16.67% of the score (10x) depending on its name prefix; a flat geometric mean over the same rows changes 22 of 29 ranks
+## q4-censor-exclusion
+   REPRODUCED excluded core scenarios: dynamic/pure push, manyEffectsFromOneSource (caused by Svelte v5@dynamic/pure push:capped, @reatom/core@dynamic/pure push:partial, kairo 0.8 alpha@manyEffectsFromOneSource:capped, @reatom/core@manyEffectsFromOneSource:capped); if those engines had been FASTER (1499 ms, measured): Svelte v5 12.53x/#24 -> 12.20x/#24; kairo 0.8 alpha 12.57x/#25 -> 13.23x/#27; @reatom/core 36.05x/#29 -> 34.49x/#29; engines whose score got WORSE by being faster: kairo 0.8 alpha; rank moves: Preact Signals 5->4, @reactively 4->5, rescript-signals 9->8, lite-signal 8->9, reactive-engine 15->14, uSignal 14->15, Signia 19->18, @amadeus-it-group/tansu 18->19, SolidJS 2 RC 26->25, @solidjs/signals 2 RC 27->26, kairo 0.8 alpha 25->27; lite-signal 8->9.
+## q5-censor-order-dependent
+   REPRODUCED: 2 same-VM pair(s) where the row with the LARGER probe was measured and the smaller one censored (0 in core scenarios), 1 (VM, scenario) cell(s) with several ceilings, 5 cross-VM inconsistencies; 28 rows are 'partial'
+## q6-warmup-drift
+   REPRODUCED: 4 scored core rows (10.6% of the score weight) are sampled while still speeding up: the published estimate is 1.07x-1.10x the level of the process's own last quarter; the 7 long update rows sit at 1.00x
+## q7-rank-sensitivity
+   REPRODUCED rank span over 6 scorings (ranks 4-9): @reactively 4-6; Preact Signals 5-6; @vue/reactivity 3.6 RC 4-6; anod 7-9; lite-signal 8-9; rescript-signals 7-9; ranks 1-3 and 10-13 fixed (control).
+## q8-stack-depth
+   REPRODUCED published: dalien cellx2500 = stack-overflow; this host (darwin/arm64 v26.8.2): dalien default=stack-overflow, --stack-size=3000=passed; MobX default=stack-overflow, --stack-size=3000=passed (published linux/x64: MobX measured); control alien-signals=passed. If dalien's row were treated as censored: dalien unranked->8, lite-signal 8->9.
+## q9-tc39-drain
+   REPRODUCED per commit: adapter getPending() calls=3, producers scanned=288; control calls=1, scanned=96; effect runs equal (96). signal-polyfill installed 0.2.2 vs locked 0.2.3 (VERSION-SENSITIVE for scan cost, not for the call count).
+## x1-score-recompute
+   NOT REPRODUCED independent scorer vs published page: 29 ranked rows, 0 mismatches; control (lite-signal x1.2) moves rank 8->11.
+## x2-capped-label
+   NOT REPRODUCED 12f169b: 28 rows with mixed machine censoring; label mismatches = 0 (control: forged mismatch detected).
+## x3-gc-before-sample
+   NOT REPRODUCED 12f169b gcMode: diamond=steady, molBench=steady, cellx1000=steady, manyEffectsFromOneSource=steady; per-invocation gc only for mode cold (benchmark.ts:869 present); creation rows = cold (control). The note still applies to the 10 creation rows, by declared design.
+# 3) comparison with the merge's run of 2026-11-24 (same 20 scripts, before the paths were re-pointed for this folder)
+#    20 of 20 exit codes identical (17 x 1, 3 x 0); every REPRODUCED / NOT REPRODUCED line above is byte-identical to the merge's log.
+# 4) other checks
+#  - before / after the run: sha256 of all 336 files outside node_modules (dist/ and this folder included) and the directory list: identical
+#  - patch --dry-run -p1 from the checkout root: all 9 patches in patches/ apply (exit 0; no fuzz, no offset)
+#  - node checks/check-neon-published.mjs (default target): output identical to checks/check-neon-published.log

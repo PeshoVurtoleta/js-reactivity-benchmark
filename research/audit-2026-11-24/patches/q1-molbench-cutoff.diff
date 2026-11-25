@@ -1,0 +1,66 @@
+--- a/src/molBench.ts
++++ b/src/molBench.ts
+@@ -24,22 +24,24 @@
+ }
+ 
+ export function molWorkload(framework: ReactiveFramework) {
++  // Mixed parities make delta (and so D[2].x and F) change at every commit,
++  // while c still returns to 0 so G keeps switching its read of E.
+   let expected = deliveryPlan([
+     expectedMol(0, 0),
+-    expectedMol(3, 1),
+-    expectedMol(4, 2),
++    expectedMol(4, 1),
++    expectedMol(6, 2),
+   ]);
+   const probe = new DeliveryProbe(expected);
+   const scope = fixtureScope(framework, () => {
+     const a = framework.signal(0),
+       b = framework.signal(0);
+     const c = framework.computed(() => (a.read() % 2) + (b.read() % 2));
+-    const items = Array.from({ length: 5 }, (_, i) => ({ x: i }));
++    // A fresh array per evaluation (as in the original molBench): an in-place
++    // mutation returning the same reference lets an Object.is cut-off skip F.
+     const d = framework.computed(() => {
+       const av = a.read() % 2,
+         bv = b.read() % 2;
+-      for (let i = 0; i < items.length; i++) items[i].x = i + av - bv;
+-      return items;
++      return Array.from({ length: 5 }, (_, i) => ({ x: i + av - bv }));
+     });
+     const e = framework.computed(() =>
+       hard(c.read() + a.read() + d.read()[0].x)
+@@ -59,11 +61,11 @@
+     probe.step = 1;
+     framework.withBatch(() => {
+       scope.value.b.write(1);
+-      scope.value.a.write(1 + offset * 2);
++      scope.value.a.write(2 + offset * 2);
+     });
+     probe.step = 2;
+     framework.withBatch(() => {
+-      scope.value.a.write(2 + offset * 2);
++      scope.value.a.write(4 + offset * 2);
+       scope.value.b.write(2);
+     });
+     return { delivery: probe.snapshot(), final: scope.value.g.read() };
+@@ -71,16 +73,16 @@
+   probe.reset();
+   verifyDelivery("molBench warmup", expected, run(1).delivery);
+   expected = deliveryPlan([
++    expectedMol(6, 2),
++    expectedMol(2, 1),
+     expectedMol(4, 2),
+-    expectedMol(1, 1),
+-    expectedMol(2, 2),
+   ]);
+   probe.reset(expected);
+   return {
+     run: () => run(0),
+     validate: (result: ReturnType<typeof run>) => {
+       verifyDelivery("molBench", expected, result.delivery);
+-      if (result.final !== expectedMol(2, 2)[1])
++      if (result.final !== expectedMol(4, 2)[1])
+         throw new Error("molBench: stale final derivation");
+     },
+     dispose: scope.dispose,

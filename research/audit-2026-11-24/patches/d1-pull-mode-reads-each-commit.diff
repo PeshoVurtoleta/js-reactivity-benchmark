@@ -1,0 +1,36 @@
+--- a/src/util/dependencyGraph.ts
++++ b/src/util/dependencyGraph.ts
+@@ -149,7 +149,10 @@
+         }
+       } else {
+         framework.withBatch(writeBatch);
+-        if (mode === "mixed" && sinkReadMode === "per-batch") read();
++        // "pull" is the dirty-read workload: every commit is followed by a sink pass, so a lazy engine
++        // has to re-evaluate what the writes invalidated. (Before, nothing was read inside the loop.)
++        if (mode === "pull" || (mode === "mixed" && sinkReadMode === "per-batch"))
++          read();
+       }
+     }
+     return read();
+--- a/src/workloads.ts
++++ b/src/workloads.ts
+@@ -121,7 +121,7 @@
+     iterations: 10000,
+     expected: {
+       sum: 5242355712,
+-      count: 224,
++      count: 910133,
+     },
+   },
+   {
+--- a/docs/benchmark-methodology.md
++++ b/docs/benchmark-methodology.md
+@@ -164,7 +164,7 @@
+ | mixed / per-update | Commit one source write, then read selected sinks; repeat for each write.                          |
+ | mixed / per-batch  | Commit an iteration's burst, then read selected sinks.                                             |
+ | mixed / final-only | Commit each iteration's burst; read sinks after all iterations.                                    |
+-| pull               | Commit each iteration's burst; read sinks at the end. Eager engines may still propagate on commit. |
++| pull               | Commit each iteration's burst, then read every selected sink: one dirty read pass per commit.      |
+ | push               | Install effects, commit each iteration's burst, and return the final delivered sink values.        |
+ 
+ The mixed runner also performs one final sink pass for the returned checksum.

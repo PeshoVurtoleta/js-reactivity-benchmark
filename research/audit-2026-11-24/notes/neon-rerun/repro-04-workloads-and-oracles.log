@@ -1,0 +1,64 @@
+Exit: 0
+=== 1. DYNAMIC WORKLOAD VERIFICATION GAPS (ALL 15 SCENARIOS) ===
+  dashboard selective reads    hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=5284058)   dbl(pull=F): PASS (count=5284058)
+  editor derived state         hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=9472664)   dbl(pull=F): PASS (count=9472664)
+  kanban board                 hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=3530992)   dbl(pull=F): PASS (count=3530992)
+  entity detail page           hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=7968420)   dbl(pull=F): PASS (count=7968420)
+  layered full-drain cold      hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=499248)    dbl(pull=F): PASS (count=499248)
+  layered full-drain warm      hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=470400)    dbl(pull=F): PASS (count=470400)
+  layered burst flush warm     hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=3058176)   dbl(pull=F): PASS (count=3058176)
+  stable diamond mesh warm     hasCount=false | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): PASS (count=49152)     dbl(pull=F): PASS (count=49152)
+  simple component             hasCount=true  | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): FAIL (count)           dbl(pull=F): PASS (count=6360020)
+  dynamic component            hasCount=true  | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): FAIL (count)           dbl(pull=F): PASS (count=2280008)
+  large web app                hasCount=true  | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): FAIL (count)           dbl(pull=F): PASS (count=2947572)
+  wide dense                   hasCount=true  | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): FAIL (count)           dbl(pull=F): PASS (count=1471512)
+  deep                         hasCount=true  | lag1(pull=T): FAIL (sum)             lag1(pull=F): FAIL (sum)             | dbl(pull=T): FAIL (count)           dbl(pull=F): PASS (count=2493004)
+
+=== 2. CELLX1000 / CELLX2500 UNVERIFIED EMPTY EFFECTS ===
+  cellx1000: realAfter=[-2,-4,2,3] cheatAfter=[-2,-4,2,3] matches=true | alien med=0.427ms vs noop-effect med=0.234ms (1.82x speedup with 0 effects!)
+  cellx2500: realAfter=[-2,-4,2,3] cheatAfter=[-2,-4,2,3] matches=true | alien med=1.300ms vs noop-effect med=0.571ms (2.28x speedup with 0 effects!)
+
+=== 3. STABLE DIAMOND MESH TOPOLOGY AUDIT ===
+{
+  totalNodes: 16384,
+  declaredFanIn: 8,
+  totalEdges: 131072,
+  uniqueEdges: 65536,
+  duplicateEdgeFraction: '50.0%',
+  sourcesReachingEachLeaf_minMax: [ 4, 4 ],
+  nodesReachableFromSource0: '256 / 16384 (1.56%)',
+  disconnectedSourceClusters: 64
+}
+
+=== 4. IEEE-754 PRECISION LOSS (>2^53) & CORRUPTION SENSITIVITY ===
+  dashboard selective reads    sum=9.8288e+8 >2^53=false +1_on_src0_detected=true  dynNodes=18 (over2^31=0, over2^53=0)
+  editor derived state         sum=1.9682e+9 >2^53=false +1_on_src0_detected=true  dynNodes=40 (over2^31=0, over2^53=0)
+  kanban board                 sum=1.0309e+10 >2^53=false +1_on_src0_detected=true  dynNodes=76 (over2^31=0, over2^53=0)
+  entity detail page           sum=1.8873e+11 >2^53=false +1_on_src0_detected=true  dynNodes=14 (over2^31=0, over2^53=0)
+  layered full-drain cold      sum=1.4676e+24 >2^53=true  +1_on_src0_detected=true  dynNodes=0 (over2^31=0, over2^53=0)
+  layered full-drain warm      sum=4.1462e+24 >2^53=true  +1_on_src0_detected=true  dynNodes=0 (over2^31=0, over2^53=0)
+  layered burst flush warm     sum=2.2842e+35 >2^53=true  +1_on_src0_detected=true  dynNodes=0 (over2^31=0, over2^53=0)
+  stable diamond mesh warm     sum=1.4238e+34 >2^53=true  +1_on_src0_detected=true  dynNodes=0 (over2^31=0, over2^53=0)
+  dynamic component            sum=3.0231e+11 >2^53=false +1_on_src0_detected=true  dynNodes=27 (over2^31=6, over2^53=0)
+  large web app                sum=2.9356e+13 >2^53=false +1_on_src0_detected=true  dynNodes=552 (over2^31=44, over2^53=0)
+  deep                         sum=3.0240e+241 >2^53=true  +1_on_src0_detected=true  dynNodes=0 (over2^31=0, over2^53=0)
+
+=== 5. LAYERED FULL-DRAIN COLD: BUILD (UNTIMED) VS RUN (TIMED) ===
+  lite-signal          build:      0 recomp /      0 edges (4.8ms) | timed run: 249624 recomp /  998496 edges (129.6ms)
+  alien-signals        build:      0 recomp /      0 edges (1.3ms) | timed run: 249624 recomp /  998496 edges (80.9ms)
+  s-js                 build:  16384 recomp /  65536 edges (9.3ms) | timed run: 233240 recomp /  932960 edges (135.2ms)
+  SolidJS              build:  16384 recomp /  65536 edges (18.5ms) | timed run: 233240 recomp /  932960 edges (173.1ms)
+  anod                 build:  16384 recomp /  65536 edges (5.4ms) | timed run: 233240 recomp /  932960 edges (94.5ms)
+  rescript-signals     build:  16384 recomp /  65536 edges (11.5ms) | timed run: 233240 recomp /  932960 edges (195.1ms)
+
+=== 6. COUNTER ANOMALIES: ANOD/RESCRIPT (PURE PULL), CELLX (MESH), KAIRO (PURE PULL) ===
+  pure pull | alien-signals        buildRecomp=0 runRecomp=224
+  pure pull | anod                 buildRecomp=224 runRecomp=224
+  pure pull | rescript-signals     buildRecomp=224 runRecomp=224
+  pure pull | kairo 0.8 alpha      buildRecomp=0 runRecomp=174752
+  cellx unsubscribed computed caching check: after 1st read=1 evals, after 2nd read (NO write!)=1 evals
+
+
+--- stderr ---
+
+--- exit 0 null

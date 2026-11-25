@@ -1,0 +1,23 @@
+(a) gcMode=steady: rounds(n>=10)=6226  s0>1.5x second-half median: 3151 (50.6%)  first-half median >1.1x second-half: 1549 (24.9%)
+(a) gcMode=cold: rounds(n>=10)=2700  s0>1.5x second-half median: 320 (11.9%)  first-half median >1.1x second-half: 278 (10.3%)
+(a) all: rounds=8926 s0>1.5x: 38.9%  first-half>1.1x: 20.5%
+(b) unranked: dalien-signals; published-rule ranks reproduced: 29 ranked, #1 reflex-quant
+(b) best computed over ranked frameworks only: 2 rank changes: @reactively #4 (1.6268) -> #5 (1.6268); Preact Signals #5 (1.6269) -> #4 (1.6259)
+(b) lite-signal #8 -> #8
+(b') lite-signal #8 score 1.9103 per machine round [1.879, 1.916, 1.910]
+(b') rescript-signals #9 score 1.9161 per machine round [1.890, 1.918, 1.916]
+(b') uSignal #14 score 2.8790 per machine round [2.872, 2.879, 2.981]
+(b') reactive-engine #15 score 2.8791 per machine round [2.856, 2.879, 2.919]
+(c) rows with processes at the 100-sample cap and total measured time < 250 ms in every such process: 18
+    molBench: 270 processes, total 2.35..11.22 ms
+    repeatedObservers: 270 processes, total 3.33..117.69 ms
+    lifecycle/dispose retained graph: 126 processes, total 1.29..120.32 ms
+    triangle: 270 processes, total 5.70..137.05 ms
+    avoidablePropagation: 252 processes, total 12.70..142.08 ms
+    mux: 261 processes, total 18.72..145.60 ms
+    dynamic/pure pull: 198 processes, total 18.31..173.50 ms
+    unstable: 270 processes, total 8.93..217.35 ms
+
+--- stderr ---
+
+--- exit 0

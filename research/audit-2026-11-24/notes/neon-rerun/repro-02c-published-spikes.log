@@ -1,0 +1,192 @@
+Published measured row counts by (gcMode, fixture): { steadyFresh: 1052, steadyWarmReused: 79, cold: 300 }
+
+steady + fresh fixture (38 scenarios): totalRounds=9369  >=2xSpike=3530 (37.7%)  >=3xSpike=2456 (26.2%)  >=5xSpike=895 (9.6%)
+  Top 8 spikes: [
+  {
+    fw: 'reactive-engine',
+    name: 'molBench',
+    n: 100,
+    med: 0.025,
+    max: 3.205,
+    ratio: 129.4,
+    idx: 49
+  },
+  {
+    fw: '@solidjs/signals 2 RC',
+    name: 'molBench',
+    n: 100,
+    med: 0.037,
+    max: 3.307,
+    ratio: 88.4,
+    idx: 50
+  },
+  {
+    fw: '@reactively',
+    name: 'triangle',
+    n: 100,
+    med: 0.051,
+    max: 3.458,
+    ratio: 67.6,
+    idx: 0
+  },
+  {
+    fw: 'Signia',
+    name: 'triangle',
+    n: 100,
+    med: 0.078,
+    max: 4.952,
+    ratio: 63.2,
+    idx: 1
+  },
+  {
+    fw: 'Preact Signals',
+    name: 'repeatedObservers',
+    n: 100,
+    med: 0.062,
+    max: 3.641,
+    ratio: 58.9,
+    idx: 0
+  },
+  {
+    fw: 'alien-signals',
+    name: 'deepPropagation',
+    n: 100,
+    med: 0.071,
+    max: 3.892,
+    ratio: 54.9,
+    idx: 0
+  },
+  {
+    fw: '@vue/reactivity 3.6 RC',
+    name: 'repeatedObservers',
+    n: 100,
+    med: 0.063,
+    max: 3.328,
+    ratio: 52.4,
+    idx: 51
+  },
+  {
+    fw: '@solidjs/signals 2 RC',
+    name: 'molBench',
+    n: 100,
+    med: 0.064,
+    max: 3.313,
+    ratio: 51.7,
+    idx: 13
+  }
+]
+
+steady + warm-reused (3 scenarios): totalRounds=684  >=2xSpike=11 (1.6%)  >=3xSpike=3 (0.4%)  >=5xSpike=0 (0.0%)
+  Top 8 spikes: [
+  {
+    fw: '@amadeus-it-group/tansu',
+    name: 'dynamic/stable diamond mesh warm',
+    n: 35,
+    med: 5.937,
+    max: 25.338,
+    ratio: 4.3,
+    idx: 13
+  }
+]
+
+cold + fresh (10 creation scenarios): totalRounds=2700  >=2xSpike=580 (21.5%)  >=3xSpike=206 (7.6%)  >=5xSpike=10 (0.4%)
+  Top 8 spikes: [
+  {
+    fw: '@reactively',
+    name: 'createComputations1to1000',
+    n: 31,
+    med: 5.739,
+    max: 45.386,
+    ratio: 7.9,
+    idx: 3
+  },
+  {
+    fw: 'kairo 0.8 alpha',
+    name: 'createDataSignals',
+    n: 33,
+    med: 5.908,
+    max: 46.08,
+    ratio: 7.8,
+    idx: 0
+  },
+  {
+    fw: 'rescript-signals',
+    name: 'createComputations0to1',
+    n: 38,
+    med: 5.389,
+    max: 31.15,
+    ratio: 5.8,
+    idx: 0
+  },
+  {
+    fw: 'rescript-signals',
+    name: 'createComputations0to1',
+    n: 39,
+    med: 5.332,
+    max: 28.679,
+    ratio: 5.4,
+    idx: 0
+  },
+  {
+    fw: 'kairo 0.8 alpha',
+    name: 'createDataSignals',
+    n: 29,
+    med: 5.878,
+    max: 31.116,
+    ratio: 5.3,
+    idx: 0
+  },
+  {
+    fw: 'alien-signals',
+    name: 'createComputations1to1000',
+    n: 30,
+    med: 4.884,
+    max: 25.652,
+    ratio: 5.3,
+    idx: 0
+  },
+  {
+    fw: 'rescript-signals',
+    name: 'createDataSignals',
+    n: 46,
+    med: 4.823,
+    max: 24.864,
+    ratio: 5.2,
+    idx: 0
+  },
+  {
+    fw: 'reflex',
+    name: 'createComputations1to1000',
+    n: 35,
+    med: 4.174,
+    max: 21.61,
+    ratio: 5.2,
+    idx: 1
+  }
+]
+
+=== CHRONOLOGICAL SPIKE PATTERN ON cellx2500 (steady+fresh) ===
+  lite-signal              n=47 med=5.43ms max=6.11ms cv=0.062 spikes(>1.8x)=[]
+  alien-signals            n=55 med=4.49ms max=5.95ms cv=0.106 spikes(>1.8x)=[]
+  reflex-quant             n=73 med=3.33ms max=7.26ms cv=0.198 spikes(>1.8x)=[6:7.3ms]
+  Preact Signals           n=73 med=3.51ms max=4.25ms cv=0.098 spikes(>1.8x)=[]
+  @vue/reactivity 3.6 RC   n=31 med=8.27ms max=10.86ms cv=0.125 spikes(>1.8x)=[]
+  Svelte v5                n=12 med=22.32ms max=32.14ms cv=0.169 spikes(>1.8x)=[]
+
+=== SHORTEST ROWS & HIGHEST CV / sd_within IN PUBLISHED DATA ===
+  s-js                     lifecycle/dispose retained graph est=0.0163ms sd_within=1.1% sd_proc=8.4% sd_mach=46.2%
+  anod                     lifecycle/dispose retained graph est=0.0182ms sd_within=1.5% sd_proc=11.5% sd_mach=48.7%
+  alien-signals            lifecycle/dispose retained graph est=0.0195ms sd_within=1.6% sd_proc=10.5% sd_mach=44.8%
+  reflex-quant             molBench                         est=0.0205ms sd_within=1.6% sd_proc=4.7% sd_mach=41.2%
+  @reactively              molBench                         est=0.0215ms sd_within=1.4% sd_proc=3.1% sd_mach=33.5%
+  @maverick-js/signals     molBench                         est=0.0215ms sd_within=1.1% sd_proc=2.6% sd_mach=34.4%
+  alien-signals            molBench                         est=0.0217ms sd_within=2.8% sd_proc=1.6% sd_mach=34.1%
+  Preact Signals           molBench                         est=0.0219ms sd_within=2.0% sd_proc=1.9% sd_mach=34.7%
+  @vue/reactivity          molBench                         est=0.0230ms sd_within=1.6% sd_proc=2.6% sd_mach=34.4%
+  @vue/reactivity 3.6 RC   molBench                         est=0.0231ms sd_within=1.7% sd_proc=2.9% sd_mach=32.7%
+  anod                     molBench                         est=0.0231ms sd_within=2.6% sd_proc=2.4% sd_mach=38.6%
+  reflex                   molBench                         est=0.0232ms sd_within=2.5% sd_proc=5.9% sd_mach=36.3%
+
+--stderr--
+
+--exit 0 signal null

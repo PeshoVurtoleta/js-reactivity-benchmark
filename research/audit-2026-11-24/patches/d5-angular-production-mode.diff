@@ -1,0 +1,13 @@
+--- a/scripts/build.mjs
++++ b/scripts/build.mjs
+@@ -24,7 +24,9 @@
+   // Libraries must run their production builds. Without this, packages that
+   // select a build from process.env.NODE_ENV at runtime (e.g. @vue/reactivity)
+   // silently run their development build with debug hooks and warnings.
+-  define: { "process.env.NODE_ENV": '"production"' },
++  // Angular does not read NODE_ENV: its development paths are guarded by the global `ngDevMode`,
++  // which the Angular CLI defines as false for production builds. Undefined means development mode.
++  define: { "process.env.NODE_ENV": '"production"', ngDevMode: "false" },
+   // Also set the real environment before dependencies initialize (and for
+   // diagnostic code that reads process.env dynamically).
+   banner: { js: 'process.env.NODE_ENV = "production";' },

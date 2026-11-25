@@ -1,0 +1,118 @@
+--- a/src/util/benchmark.ts
++++ b/src/util/benchmark.ts
+@@ -446,7 +446,7 @@
+ 
+   if (process.env.BENCH_CASE) {
+     const entry = registeredCases[0];
+-    const outcome = measureCaseSafely(
++    const outcome = await measureCaseSafely(
+       entry,
+       readPositiveInteger("BENCH_ROUND", 1),
+       process.env.BENCH_DEFER_CAP === "1"
+@@ -667,7 +667,7 @@
+   ceilingMs?: number
+ ): Promise<CaseOutcome> {
+   if (process.env.BENCH_IN_PROCESS === "1")
+-    return measureCaseSafely(entry, round, allowDefer);
++    return await measureCaseSafely(entry, round, allowDefer);
+   const failed = (failure: RowFailure): CaseOutcome => ({
+     kind: "failed",
+     id: entry.id,
+@@ -766,14 +766,21 @@
+   });
+ }
+ 
++/**
++ * One turn of the event loop. The sample loop used to be fully synchronous, so a library that releases
++ * nodes from a microtask (or a finalizer task) kept every earlier fixture alive for the whole row.
++ */
++const eventLoopTurn = (): Promise<void> =>
++  new Promise((resolve) => setImmediate(resolve));
++
+ /** Measure a case; an exception becomes a classified failure outcome. */
+-function measureCaseSafely(
++async function measureCaseSafely(
+   entry: RegisteredCase,
+   round: number,
+   allowDefer: boolean
+-): CaseOutcome {
++): Promise<CaseOutcome> {
+   try {
+-    return measureCase(entry, round, allowDefer);
++    return await measureCase(entry, round, allowDefer);
+   } catch (error) {
+     return { kind: "failed", id: entry.id, failure: failureOf(error) };
+   }
+@@ -819,11 +826,11 @@
+ const blackholeSink: { value: unknown } = { value: undefined };
+ 
+ /** Measure one case: pilot, validated warmup, then chronological samples. */
+-function measureCase(
++async function measureCase(
+   entry: RegisteredCase,
+   round: number,
+   allowDefer: boolean
+-): CaseOutcome {
++): Promise<CaseOutcome> {
+   const policy = samplingPolicy(entry.samples);
+   const guard = consoleGuard();
+   const mode = gcMode(entry);
+@@ -847,12 +854,13 @@
+       }
+     }
+   };
+-  const prepare = () => {
++  const prepare = async () => {
+     // Validate the preceding invocation before a reset can destroy its fixture.
+     validatePending();
+     blackholeSink.value = undefined;
+     result = undefined;
+     if (entry.reuseFixture && hasFixture) {
++      await eventLoopTurn();
+       entry.prepareSample?.(fixture);
+       return;
+     }
+@@ -860,11 +868,14 @@
+       hasFixture = false;
+       entry.teardown?.(fixture);
+     }
++    // Deferred release scheduled by the previous invocation or its teardown runs here, outside timing
++    // and before the next fixture exists.
++    await eventLoopTurn();
+     fixture = entry.setup();
+     hasFixture = true;
+   };
+-  const invoke = (): number => {
+-    prepare();
++  const invoke = async (): Promise<number> => {
++    await prepare();
+     // Collect setup and previous-sample garbage outside the timed region.
+     if (hasGc && (mode === "cold" || !collected)) {
+       globalThis.gc!();
+@@ -902,7 +913,7 @@
+     };
+ 
+   try {
+-    const pilotMs = invoke();
++    const pilotMs = await invoke();
+     censorProbe = false;
+     validatePending();
+     const warmupMs: number[] = [];
+@@ -916,7 +927,7 @@
+     });
+     if (mode === "cold" && allowDefer && pilotMs > MIN_PERFORMANCE_CEILING_MS)
+       return defer(pilotMs);
+-    for (let i = 0; i < policy.warmup; i++) warmupMs.push(invoke());
++    for (let i = 0; i < policy.warmup; i++) warmupMs.push(await invoke());
+     const samplesMs: number[] = [];
+     let censorMs = pilotMs;
+     let measuredMs = 0;
+@@ -925,7 +936,7 @@
+       (samplesMs.length < policy.minSamples || measuredMs < policy.minTimeMs)
+     ) {
+       censorProbe = mode !== "cold" && samplesMs.length === 0;
+-      const duration = invoke();
++      const duration = await invoke();
+       if (censorProbe) {
+         censorMs = duration;
+         validatePending();

@@ -1,0 +1,33 @@
+--- a/src/util/benchmark.ts
++++ b/src/util/benchmark.ts
+@@ -238,7 +238,7 @@
+   if (name.startsWith("update")) return ["update", "write and pull"];
+   if (name.startsWith("lifecycle/")) return ["lifecycle", "native ownership"];
+   if (name.startsWith("mutable-object/") || name === "molBench")
+-    return ["dynamic", "object publication"];
++    return ["publication", "object publication"];
+   if (name.startsWith("many")) return ["push", "fan"];
+   if (name.startsWith("dynamic/")) return ["large_graph", "dependency graph"];
+   return ["baseline", "historical propagation"];
+--- a/README.md
++++ b/README.md
+@@ -186,7 +186,7 @@
+ - `update` - changed source writes followed by reads of every computed consumer
+ - `pull` - dirty reads, aggregation, and chain pulls
+ - `push` - fan-out propagation and effect delivery
+-- `dynamic` - branch switching, dependency cleanup, and retracking
++- `publication` - object publication behind an equality or identity cut-off (`mutable-object/*`, `molBench`)
+ - `large_graph` - scaling behavior on larger DAGs
+ - `baseline` - historical propagation scenarios such as `diamond`, `mux`, and `triangle`, plus the `cellx1000`/`cellx2500` layer workloads of the original suite
+ 
+--- a/SEMANTICS.md
++++ b/SEMANTICS.md
+@@ -207,7 +207,7 @@
+ | `update`      | Stable graph write and invalidation hot paths               |
+ | `pull`        | Dirty computed reads, fan-in aggregation, and chain pulls   |
+ | `push`        | Fan-out propagation and effect delivery                     |
+-| `dynamic`     | Dependency churn, branch switching, cleanup, and retracking |
++| `publication` | Object publication behind equality / identity cut-offs      |
+ | `large_graph` | Scaling behavior on larger DAGs                             |
+ | `lifecycle`   | Create/dispose pressure and retained graph behavior         |
+ | `baseline`    | Small propagation and historical reference cases            |

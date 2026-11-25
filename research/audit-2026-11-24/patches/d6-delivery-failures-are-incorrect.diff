@@ -1,0 +1,55 @@
+--- a/src/util/delivery.ts
++++ b/src/util/delivery.ts
+@@ -43,6 +43,9 @@
+  * additionally deliver unchanged values; that is visible work, not an error.
+  * Assertions and reference simulation are outside measurement.
+  */
++/** A wrong or missing delivery: an incorrect result, not a crash (see failureOf in benchmark.ts). */
++export class DeliveryError extends Error {}
++
+ export class DeliveryProbe {
+   step = 0;
+   private deliveries = 0;
+@@ -88,7 +91,7 @@
+ 
+   verifyInitial(name: string): void {
+     if (this.mismatches || this.coverage !== this.plan.width) {
+-      throw new Error(
++      throw new DeliveryError(
+         `${name}: initial effects did not deliver correct values`
+       );
+     }
+@@ -101,14 +104,14 @@
+   result: DeliveryResult
+ ): void {
+   if (result.mismatches || result.coverage !== plan.required) {
+-    throw new Error(
++    throw new DeliveryError(
+       `${name}: delivery mismatches=${result.mismatches}, changed outputs delivered=${result.coverage}, expected=${plan.required}`
+     );
+   }
+   const offset = plan.steps * plan.stride;
+   for (let i = 0; i < plan.width; i++) {
+     if (result.latest[i] !== plan.values[offset + (plan.columns?.[i] ?? i)]) {
+-      throw new Error(`${name}: observer ${i} has a stale final value`);
++      throw new DeliveryError(`${name}: observer ${i} has a stale final value`);
+     }
+   }
+ }
+--- a/src/util/benchmark.ts
++++ b/src/util/benchmark.ts
+@@ -1,3 +1,4 @@
++import { DeliveryError } from "./delivery";
+ import { fork } from "node:child_process";
+ import { cpus, release, totalmem, type } from "node:os";
+ import { existsSync, readFileSync } from "node:fs";
+@@ -165,7 +166,8 @@
+ 
+ function failureOf(error: unknown): RowFailure {
+   const message = error instanceof Error ? error.message : String(error);
+-  if (error instanceof ValidationError) return { kind: "incorrect", message };
++  if (error instanceof ValidationError || error instanceof DeliveryError)
++    return { kind: "incorrect", message };
+   const kind = classifyFailure(message);
+   return { kind: kind === "crashed" ? "error" : kind, message };
+ }
